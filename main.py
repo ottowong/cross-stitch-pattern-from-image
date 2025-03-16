@@ -32,12 +32,12 @@ def get_logs():
     return jsonify(logs)  # Return the logs as JSON
 
 # Route for the log stream page
-@app.route('/log_stream')
-def log_stream():
+@app.route('/processing')
+def processing():
     if 'user_id' not in session:
         return redirect(url_for('index'))
 
-    return render_template('log_stream.html')  # Render the log_stream template
+    return render_template('processing.html')  # Render the processing template
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -57,7 +57,7 @@ def index():
             # Start processing with user-defined size type, size value, and num_colors
             threading.Thread(target=process_image, args=(input_image, session['user_id'], size_type, size_value, num_colors, log_buffers)).start()
             
-            return redirect(url_for('log_stream'))
+            return redirect(url_for('processing'))
     
     return render_template('index.html')
 
