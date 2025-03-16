@@ -84,9 +84,11 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
         new_width = int(new_height * aspect_ratio)
         log_buffers[user_id].append(f"Resizing image to {new_width}x{new_height} (based on height)...")
         img = img.resize((new_width, new_height))
-    
+
     img = img.convert("RGB")
-    
+
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
     pixels = np.array(img)
     symbol_grid = []
     used_colors = set()
@@ -110,11 +112,21 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
         log_buffers[user_id].append(f"Processed {i+1}/{pixels.shape[0]} rows... {progress_bar} {int(progress * 100)}%")
     
     cell_size = 20
-    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+    image_filename = f"IMAGE_{timestamp}.png"
+    image_img_path = os.path.join("output", image_filename)
+    image_img = Image.fromarray(pixels.astype('uint8'), "RGB")
+
+    image_new_width = image_img.width * 10
+    image_new_height = image_img.height * 10
+    image_img = image_img.resize((image_new_width, image_new_height), Image.NEAREST)
+
+    image_img.save(image_img_path)
 
     pattern_filename = f"PATTERN_{timestamp}.png"
     pattern_img_path = os.path.join("output", pattern_filename)
     pattern_img = Image.new("RGB", (new_width * cell_size, new_height * cell_size), "white")
+
     draw = ImageDraw.Draw(pattern_img)
     font = ImageFont.truetype("arial.ttf", 14)
     
