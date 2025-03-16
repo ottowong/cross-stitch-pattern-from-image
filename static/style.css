@@ -29,3 +29,7 @@ h1 {
 .ko-fi-button {
     display: inline-block;
 }
+
+#log-container{
+    text-align: center;
+}
