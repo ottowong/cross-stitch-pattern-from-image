@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}Log Stream{% endblock %}
-
 {% block content %}
     <div class="container">
         <div id="log-container" class="border p-3" style="max-height: 80vh; background-color: #f9f9f9;"></div>
@@ -47,10 +45,16 @@
                                 logContainer.textContent = "Done!";
                                 logContainer.scrollTop = logContainer.scrollHeight;
 
+                                document.title = "Finished Processing!"
+
                                 isDone = true;
 
                                 clearInterval(fetchLogsInterval);
+
+                                // Try to auto redirect the user
+                                window.location.href = `/completed/${timestamp}`;
                             }
+
                         } else if (latestLog.startsWith("Error")) {
                             const completedLink = document.createElement('a');
                             completedLink.id = 'completed-link';
@@ -61,12 +65,17 @@
                             completedLink.style.textDecoration = 'underline';
 
                             linkContainer.appendChild(completedLink);
+                            
+                            document.title = "Error!"
 
                             isDone = true;
 
                             clearInterval(fetchLogsInterval);
+
+                        } else {
+                            document.title = "Processing Image..."
                         }
-                    }
+                    } 
                 })
                 .catch(error => console.error('Error fetching logs:', error));
         }
