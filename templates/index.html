@@ -20,6 +20,26 @@
     <label for="num_colors" class="form-label">Number of Color Groups (0 = unlimited):</label>
     <input type="number" name="num_colors" value="0" min="0" max="489" class="form-control" required>
 
+    <div class="mt-4">
+        <button class="btn btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#aboutSection" aria-expanded="false" aria-controls="aboutSection">
+            About
+        </button>
+        <div class="collapse mt-2" id="aboutSection">
+            <div class="card card-body">
+                <p>
+                    This website allows you to upload an image and generate a cross-stitch pattern based on the image's colors and size. 
+                    You can adjust the size of the pattern and limit the number of color groups used. 
+                    <br>
+                    Once the pattern and key are generated, you will be able to download them. 
+                    They are deleted from the server after 24 hours, so I recommend saving them.
+                    <br>
+                    <br>
+                    This website is 100% free to use, but you can send me money anyway if you want, by clicking the Ko-fi button above :^)
+                </p>
+            </div>
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary mt-3">Generate Pattern</button>
 </form>
 
