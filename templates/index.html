@@ -4,16 +4,24 @@
 
 {% block content %}
 
-    <form action="/" method="POST" enctype="multipart/form-data" class="card p-4">
-        <label for="image" class="form-label">Upload Image:</label>
-        <input type="file" name="image" class="form-control" required>
+<form action="/" method="POST" enctype="multipart/form-data" class="card p-4">
+    <label for="image" class="form-label">Upload Image:</label>
+    <input type="file" name="image" class="form-control" required>
 
-        <label for="width" class="form-label">Width (in pixels):</label>
-        <input type="number" name="width" value="100" min="10" class="form-control" required>
+    <!-- Dropdown to choose width or height -->
+    <label for="size_type" class="form-label">Size Type:</label>
+    <select name="size_type" class="form-control" required>
+        <option value="width">Width</option>
+        <option value="height">Height</option>
+    </select>
 
-        <label for="num_colors" class="form-label">Number of Color Groups (0 = unlimited):</label>
-        <input type="number" name="num_colors" value="0" min="0" class="form-control" required>
+    <label for="size_value" class="form-label">Size (in pixels):</label>
+    <input type="number" name="size_value" value="100" min="10" class="form-control" required>
 
-        <button type="submit" class="btn btn-primary mt-3">Generate Pattern</button>
-    </form>
+    <label for="num_colors" class="form-label">Number of Color Groups (0 = unlimited):</label>
+    <input type="number" name="num_colors" value="0" min="0" class="form-control" required>
+
+    <button type="submit" class="btn btn-primary mt-3">Generate Pattern</button>
+</form>
+
 {% endblock %}

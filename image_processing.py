@@ -55,16 +55,28 @@ def get_contrasting_color(rgb):
     luminance = (0.299 * r + 0.587 * g + 0.114 * b)
     return "black" if luminance > 128 else "white"
 
-# Function to process the image and generate pattern and key
-def convert_image(input_image, width, colors_json, num_colors, user_id, log_buffers):
+def convert_image(input_image, size_type, size_value, colors_json, num_colors, user_id, log_buffers):
     log_buffers[user_id].append("Starting image processing...")
     color_palette = load_colors(colors_json, num_colors, log_buffers, user_id)
     
     img = Image.open(input_image)
-    aspect_ratio = img.height / img.width
-    new_height = int(width * aspect_ratio)
-    log_buffers[user_id].append(f"Resizing image to {width}x{new_height}...")
-    img = img.resize((width, new_height))
+    
+    if size_type == "width":
+        # Resize based on width, calculate height to maintain aspect ratio
+        aspect_ratio = img.height / img.width
+        new_width = size_value
+        new_height = int(new_width * aspect_ratio)
+        log_buffers[user_id].append(f"Resizing image to {new_width}x{new_height} (based on width)...")
+        img = img.resize((new_width, new_height))
+        
+    elif size_type == "height":
+        # Resize based on height, calculate width to maintain aspect ratio
+        aspect_ratio = img.width / img.height
+        new_height = size_value
+        new_width = int(new_height * aspect_ratio)
+        log_buffers[user_id].append(f"Resizing image to {new_width}x{new_height} (based on height)...")
+        img = img.resize((new_width, new_height))
+    
     img = img.convert("RGB")
     
     pixels = np.array(img)
@@ -88,15 +100,13 @@ def convert_image(input_image, width, colors_json, num_colors, user_id, log_buff
         progress_bar = "[" + "#" * filled_length + "-" * (bar_length - filled_length) + "]"
         
         log_buffers[user_id].append(f"Processed {i+1}/{pixels.shape[0]} rows... {progress_bar} {int(progress * 100)}%")
-
     
-    # log_buffers[user_id].append("Generating cross-stitch pattern image...")
     cell_size = 20
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     pattern_filename = f"PATTERN_{timestamp}.png"
     pattern_img_path = os.path.join("output", pattern_filename)
-    pattern_img = Image.new("RGB", (width * cell_size, new_height * cell_size), "white")
+    pattern_img = Image.new("RGB", (new_width * cell_size, new_height * cell_size), "white")
     draw = ImageDraw.Draw(pattern_img)
     font = ImageFont.truetype("arial.ttf", 14)
     
@@ -118,7 +128,6 @@ def convert_image(input_image, width, colors_json, num_colors, user_id, log_buff
     pattern_img.save(pattern_img_path)
     
     used_palette = [color for color in color_palette if tuple(color["RGB"]) in used_colors]
-    # log_buffers[user_id].append(f"Pattern saved as {pattern_filename}")
 
     key_filename = f"KEY_{timestamp}.png"
     key_img_path = os.path.join("output", key_filename)
@@ -139,11 +148,10 @@ def convert_image(input_image, width, colors_json, num_colors, user_id, log_buff
         draw.text((text_x, text_y), text, fill="black", font=font)
     
     key_img.save(key_img_path)
-    # log_buffers[user_id].append(f"Key saved as {key_filename}")
     log_buffers[user_id].append(f'COMPLETED {timestamp}')
 
     return pattern_img_path, key_img_path
 
-def process_image(input_image, user_id, width, num_colors, log_buffers):
-    pattern_img_path, key_img_path = convert_image(input_image, width, "colours.json", num_colors, user_id, log_buffers)
-    #log_buffers[user_id].append(f"COMPLETED {datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
+def process_image(input_image, user_id, size_type, size_value, num_colors, log_buffers):
+    pattern_img_path, key_img_path = convert_image(input_image, size_type, size_value, "colours.json", num_colors, user_id, log_buffers)
+    # log_buffers[user_id].append(f"COMPLETED {datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")

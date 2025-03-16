@@ -43,7 +43,8 @@ def log_stream():
 def index():
     if request.method == 'POST':
         file = request.files['image']
-        width = int(request.form['width'])  # Get width from form
+        size_type = request.form['size_type']  # Get the size type (width or height)
+        size_value = int(request.form['size_value'])  # Get the size value (width or height in pixels)
         num_colors = int(request.form['num_colors'])  # Get color groups from form
 
         if file:
@@ -53,12 +54,13 @@ def index():
             input_image = os.path.join(app.config['UPLOAD_FOLDER'], f"{session['user_id']}.jpg")
             file.save(input_image)
             
-            # Start processing with user-defined width & num_colors
-            threading.Thread(target=process_image, args=(input_image, session['user_id'], width, num_colors, log_buffers)).start()
+            # Start processing with user-defined size type, size value, and num_colors
+            threading.Thread(target=process_image, args=(input_image, session['user_id'], size_type, size_value, num_colors, log_buffers)).start()
             
             return redirect(url_for('log_stream'))
     
     return render_template('index.html')
+
 
 @app.route('/completed/<timestamp>')
 def completed(timestamp):
