@@ -127,3 +127,5 @@ dmypy.json
 input.*
 output.png
 key.png
+uploads/
+output/

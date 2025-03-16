@@ -1,11 +1,39 @@
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, Response, session
+import os
 from PIL import Image, ImageDraw, ImageFont
 import json
 import numpy as np
 from sklearn.cluster import KMeans
+import time
+import threading
+from datetime import datetime
+import base64
 
-# Load colors from JSON
-def load_colors(json_file, num_colors):
-    print("Loading colors from JSON...")
+app = Flask(__name__)
+
+# Secret key for session management
+app.secret_key = os.urandom(24)
+
+# Ensure that you have a 'uploads' and 'output' folder for saving uploaded images and generated files
+UPLOAD_FOLDER = 'uploads'
+OUTPUT_FOLDER = 'output'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
+
+# Initialize log storage per user session
+log_buffers = {}
+
+# Function to stream logs via SSE
+def generate_log(user_id):
+    while True:
+        if user_id in log_buffers and log_buffers[user_id]:
+            log_entry = log_buffers[user_id].pop(0)  # Get the next log entry for the user
+            yield f"data: {log_entry}\n\n"
+        time.sleep(0.5)  # Wait for a bit before checking again
+
+# Modify load_colors to accept user_id explicitly
+def load_colors(json_file, num_colors, user_id):
+    log_buffers[user_id].append("Loading colors from JSON...")
     with open(json_file, "r", encoding="utf-8") as file:
         colors = json.load(file)
     
@@ -17,11 +45,11 @@ def load_colors(json_file, num_colors):
 
     # Check if num_colors is 0, if so, return all colors without clustering
     if num_colors == 0:
-        print(f"Using all colors without clustering...")
+        log_buffers[user_id].append(f"Using all colors without clustering...")
         clustered_palette = [{"RGB": rgb, "Symbol": chr(65 + i % 26), "DMC": color["DMC"], "Name": color["Name"]} for i, (rgb, color) in enumerate(zip(rgb_values, colors))]
         return clustered_palette
     
-    print(f"Clustering {len(rgb_values)} colors into {num_colors} groups...")
+    log_buffers[user_id].append(f"Clustering {len(rgb_values)} colors into {num_colors} groups...")
     kmeans = KMeans(n_clusters=num_colors, n_init=10, random_state=42)
     labels = kmeans.fit_predict(rgb_values)
     
@@ -44,9 +72,8 @@ def load_colors(json_file, num_colors):
             "Name": color_info["Name"]
         })
     
-    print(f"Reduced to {len(clustered_palette)} colors.")
+    log_buffers[user_id].append(f"Reduced to {len(clustered_palette)} colors.")
     return clustered_palette
-
 
 # Find closest color
 def closest_color(pixel, color_palette):
@@ -59,22 +86,29 @@ def get_contrasting_color(rgb):
     luminance = (0.299 * r + 0.587 * g + 0.114 * b)
     return "black" if luminance > 128 else "white"
 
-# Convert image to cross-stitch pattern
-def convert_image(input_image, output_image, width, colors_json, num_colors):
-    print("Starting image processing...")
-    color_palette = load_colors(colors_json, num_colors)
+def process_image(input_image, user_id):
+    # Pass user_id explicitly to convert_image function
+    pattern_img_path, key_img_path = convert_image(input_image, 100, "colours.json", 0, user_id)
+    log_buffers[user_id].append(f"Pattern and Key generated.")
+    log_buffers[user_id].append(f"Download Pattern: {url_for('download', filename=os.path.basename(pattern_img_path))}")
+    log_buffers[user_id].append(f"Download Key: {url_for('download', filename=os.path.basename(key_img_path))}")
+
+# Modify convert_image to accept user_id explicitly
+def convert_image(input_image, width, colors_json, num_colors, user_id):
+    log_buffers[user_id].append("Starting image processing...")
+    color_palette = load_colors(colors_json, num_colors, user_id)  # Pass user_id here
     
     img = Image.open(input_image)
     aspect_ratio = img.height / img.width
     new_height = int(width * aspect_ratio)
-    print(f"Resizing image to {width}x{new_height}...")
+    log_buffers[user_id].append(f"Resizing image to {width}x{new_height}...")
     img = img.resize((width, new_height))
     img = img.convert("RGB")
     
     pixels = np.array(img)
     symbol_grid = []
     used_colors = set()  # To store unique colors used in the image
-    print("Finding closest DMC colors...")
+    log_buffers[user_id].append("Finding closest DMC colors...")
     
     for i in range(pixels.shape[0]):
         row_symbols = []
@@ -84,10 +118,15 @@ def convert_image(input_image, output_image, width, colors_json, num_colors):
             pixels[i, j] = closest["RGB"]
             used_colors.add(tuple(closest["RGB"]))  # Add the color to the set of used colors
         symbol_grid.append(row_symbols)
-        print(f"Processed {i}/{pixels.shape[0]} rows...")
+        log_buffers[user_id].append(f"Processed {i}/{pixels.shape[0]} rows...")
     
-    print("Generating cross-stitch pattern image...")
+    log_buffers[user_id].append("Generating cross-stitch pattern image...")
     cell_size = 20
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+    # Save Pattern image to the "output" folder with the timestamp
+    pattern_filename = f"PATTERN_{timestamp}.png"
+    pattern_img_path = os.path.join(app.config['OUTPUT_FOLDER'], pattern_filename)
     pattern_img = Image.new("RGB", (width * cell_size, new_height * cell_size), "white")
     draw = ImageDraw.Draw(pattern_img)
     font = ImageFont.truetype("arial.ttf", 14)
@@ -109,13 +148,16 @@ def convert_image(input_image, output_image, width, colors_json, num_colors):
             text_y = y + (cell_size - text_height) // 2
             draw.text((text_x, text_y), symbol, fill=text_color, font=font)
     
-    pattern_img.save(output_image)
-    print(f"Pattern saved to {output_image}")
+    pattern_img.save(pattern_img_path)
     
     # Filter the color palette to only include colors used in the image
     used_palette = [color for color in color_palette if tuple(color["RGB"]) in used_colors]
 
-    print("Generating color key...")
+    log_buffers[user_id].append(f"Pattern saved as {pattern_filename}")
+
+    # Save Key image to the "output" folder with timestamp
+    key_filename = f"KEY_{timestamp}.png"
+    key_img_path = os.path.join(app.config['OUTPUT_FOLDER'], key_filename)
     key_img = Image.new("RGB", (500, len(used_palette) * 30), "white")  # Increase width for additional text
     draw = ImageDraw.Draw(key_img)
     
@@ -137,8 +179,44 @@ def convert_image(input_image, output_image, width, colors_json, num_colors):
         text_y = y + (30 - text_height) // 2  # Center the text vertically
         draw.text((text_x, text_y), text, fill="black", font=font)
     
-    key_img.save("key.png")
-    print("Key saved as key.png")
+    key_img.save(key_img_path)
 
-# Example usage
-convert_image("input.jpg", "output.png", 100, "colours.json", 0)  # 0 to use all colors
+    log_buffers[user_id].append(f"Key saved as {key_filename}")
+
+    # Return the links to pattern and key
+    return pattern_img_path, key_img_path
+
+# Route for serving SSE logs (owner-only)
+@app.route('/log_stream')
+def log_stream():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    return Response(generate_log(session['user_id']), content_type='text/event-stream')
+
+# Main route to upload and process the image
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        file = request.files['image']
+        if file:
+            # Create a unique user ID for the session to track logs
+            session['user_id'] = str(time.time())
+            log_buffers[session['user_id']] = []
+            
+            # Save uploaded image
+            input_image = os.path.join(app.config['UPLOAD_FOLDER'], f"{session['user_id']}.jpg")
+            file.save(input_image)
+            
+            # Start processing in a new thread to allow multiple tasks
+            threading.Thread(target=process_image, args=(input_image, session['user_id'],)).start()
+            return redirect(url_for('log_stream'))  # Redirect to log stream page
+    return render_template('index.html')  # Upload form
+
+# Route to download the generated files
+@app.route('/output/<filename>')
+def download_file(filename):
+    # Serve the file from the output folder
+    return send_from_directory(app.config['OUTPUT_FOLDER'], filename)
+
+if __name__ == '__main__':
+    app.run(debug=True)
