@@ -61,7 +61,7 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
     
     img = Image.open(input_image)
     
-    # If the image has an alpha channel (transparency), convert it to RGB with a white background
+    # If the image has transparency, convert it to RGB with a white background
     if img.mode == "RGBA":
         log_buffers[user_id].append("Image has transparency, converting to RGB with white background...")
         img = img.convert("RGBA")
@@ -103,7 +103,7 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
 
         # Calculate progress percentage
         progress = (i + 1) / pixels.shape[0]
-        bar_length = 20  # Adjust the length of the progress bar
+        bar_length = 20
         filled_length = int(bar_length * progress)
         progress_bar = "[" + "#" * filled_length + "-" * (bar_length - filled_length) + "]"
         
@@ -159,7 +159,6 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
     log_buffers[user_id].append(f'COMPLETED {timestamp}')
 
     return pattern_img_path, key_img_path
-
 
 def process_image(input_image, user_id, size_type, size_value, num_colors, log_buffers):
     try:
