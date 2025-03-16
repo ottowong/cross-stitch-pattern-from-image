@@ -4,18 +4,19 @@ import time
 # Get the base directory where the script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Paths for the uploads and output directories, using relative paths
+# Paths for the uploads and output directories
 UPLOADS_DIR = os.path.join(BASE_DIR, 'uploads')
 OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 
-# Time threshold (24 hours ago)
-TIME_THRESHOLD = time.time() - 24 * 60 * 60  # 24 hours ago
+# Time thresholds
+UPLOADS_THRESHOLD = time.time() - 1 * 10 * 60
+OUTPUT_THRESHOLD = time.time() - 1 * 60 * 60
 
-# List of files to not delete (e.g., .gitkeep files)
+# List of files to not delete
 EXCLUDE_FILES = {'.gitkeep'}
 
-def delete_old_files(directory):
-    """Delete files older than 24 hours, except for excluded files like .gitkeep."""
+def delete_old_files(directory, threshold):
+    """Delete files older than the specified threshold, except for excluded files."""
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         
@@ -24,14 +25,13 @@ def delete_old_files(directory):
             continue
         
         file_age = os.path.getmtime(file_path)
-        if file_age < TIME_THRESHOLD:
+        if file_age < threshold:
             print(f"Deleting {file_path}")
             os.remove(file_path)
 
 def main():
-    delete_old_files(UPLOADS_DIR)
-    delete_old_files(OUTPUT_DIR)
+    delete_old_files(UPLOADS_DIR, UPLOADS_THRESHOLD)
+    delete_old_files(OUTPUT_DIR, OUTPUT_THRESHOLD)
 
 if __name__ == "__main__":
     main()
-
