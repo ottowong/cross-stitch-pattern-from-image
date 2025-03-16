@@ -23,3 +23,9 @@ h1 {
 .text-center a:hover {
     color: black;
 }
+
+
+
+.ko-fi-button {
+    display: inline-block;
+}
