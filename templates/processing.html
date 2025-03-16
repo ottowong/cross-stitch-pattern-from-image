@@ -5,15 +5,11 @@
 {% block content %}
     <div class="container">
         <div id="log-container" class="border p-3" style="max-height: 80vh; background-color: #f9f9f9;"></div>
-
-        <!-- Centering the link container horizontally -->
-        <div id="link-container" class="mt-4 d-flex justify-content-center">
-            <!-- The completed link will appear here -->
-        </div>
+        <div id="link-container" class="mt-4 d-flex justify-content-center"></div>
     </div>
 
     <script>
-        let isDone = false;  // Flag to check if the process is done
+        let isDone = false;
         let fetchLogsInterval;
 
         function fetchLogs() {
@@ -21,7 +17,7 @@
                 .then(response => response.json())
                 .then(logs => {
                     const logContainer = document.getElementById('log-container');
-                    const linkContainer = document.getElementById('link-container'); // Ensure this exists
+                    const linkContainer = document.getElementById('link-container');
 
                     if (!logContainer) {
                         console.error("Error: 'log-container' not found.");
@@ -33,7 +29,6 @@
                         logContainer.textContent = latestLog;
                         logContainer.scrollTop = logContainer.scrollHeight;
 
-                        // Check if the latest log indicates completion
                         if (latestLog.startsWith("COMPLETED ")) {
                             const timestamp = latestLog.replace("COMPLETED ", "").trim(); // Extract timestamp
 
@@ -52,10 +47,8 @@
                                 logContainer.textContent = "Done!";
                                 logContainer.scrollTop = logContainer.scrollHeight;
 
-                                // Set the flag to true, indicating the process is complete
                                 isDone = true;
 
-                                // Stop fetching logs once done
                                 clearInterval(fetchLogsInterval);
                             }
                         } else if (latestLog.startsWith("Error")) {
@@ -78,7 +71,6 @@
                 .catch(error => console.error('Error fetching logs:', error));
         }
 
-        // Fetch logs every 1 second
         fetchLogsInterval = setInterval(fetchLogs, 1000);
     </script>
 {% endblock %}
