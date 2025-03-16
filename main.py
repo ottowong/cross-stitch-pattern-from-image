@@ -63,8 +63,9 @@ def index():
 def completed(timestamp):
     pattern_filename = f"PATTERN_{timestamp}.png"
     key_filename = f"KEY_{timestamp}.png"
+    image_filename = f"IMAGE_{timestamp}.png"
 
-    return render_template('completed.html', pattern=pattern_filename, key=key_filename)
+    return render_template('completed.html', pattern=pattern_filename, key=key_filename, image=image_filename)
 
 # Route for the image files
 @app.route('/output/<path:filename>')
