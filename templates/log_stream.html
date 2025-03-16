@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Stream</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #log-container {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 80vh;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-top: 20px;
+        }
+        #log-header {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .log-entry {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Processing Logs</h1>
+
+<div id="log-header">Latest Log:</div>
+<div id="log-container"></div>
+<div id="link-container"></div> <!-- This is where the link will appear -->
+
+<script>
+    function fetchLogs() {
+        fetch('/get_logs')
+            .then(response => response.json())
+            .then(logs => {
+                const logContainer = document.getElementById('log-container');
+                const linkContainer = document.getElementById('link-container'); // Ensure this exists
+
+                if (!logContainer) {
+                    console.error("Error: 'log-container' not found.");
+                    return;
+                }
+
+                if (logs.length > 0) {
+                    const latestLog = logs[logs.length - 1];
+                    logContainer.textContent = latestLog;
+                    logContainer.scrollTop = logContainer.scrollHeight;
+
+                    // Check if the latest log indicates completion
+                    if (latestLog.startsWith("COMPLETED ")) {
+                        const timestamp = latestLog.replace("COMPLETED ", "").trim(); // Extract timestamp
+
+                        // Check if the link already exists to avoid duplicates
+                        if (!document.getElementById('completed-link')) {
+                            const completedLink = document.createElement('a');
+                            completedLink.id = 'completed-link';
+                            completedLink.href = `/completed/${timestamp}`;
+                            completedLink.textContent = 'View Completed Pattern';
+                            completedLink.style.display = 'block';
+                            completedLink.style.marginTop = '20px';
+                            completedLink.style.fontSize = '18px';
+                            completedLink.style.fontWeight = 'bold';
+                            completedLink.style.color = 'blue';
+                            completedLink.style.textDecoration = 'underline';
+
+                            linkContainer.appendChild(completedLink);
+
+                            logContainer.textContent = "Done!";
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching logs:', error));
+    }
+
+    // Fetch logs every 1 second
+    setInterval(fetchLogs, 1000);
+</script>
+
+
+</body>
+</html>

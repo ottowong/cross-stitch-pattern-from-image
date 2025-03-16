@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Image for Cross-Stitch</title>
+    <title>Upload Image</title>
 </head>
 <body>
-    <h1>Upload Image</h1>
-    <form action="/" method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" required>
-        <button type="submit">Upload</button>
-    </form>
+
+<h1>Upload an Image for Processing</h1>
+
+<form action="/" method="POST" enctype="multipart/form-data">
+    <label for="image">Upload Image:</label>
+    <input type="file" name="image" required>
+    
+    <label for="width">Width (in pixels):</label>
+    <input type="number" name="width" value="100" min="10" required>
+
+    <label for="num_colors">Number of Color Groups (0 = unlimited):</label>
+    <input type="number" name="num_colors" value="0" min="0" required>
+
+    <button type="submit">Generate Pattern</button>
+</form>
+
+
 </body>
 </html>
