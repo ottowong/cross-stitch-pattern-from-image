@@ -127,5 +127,7 @@ dmypy.json
 input.*
 output.png
 key.png
-uploads/*
-output/*
+/uploads/*
+/output/*
+!/uploads/.gitkeep
+!/output/.gitkeep
