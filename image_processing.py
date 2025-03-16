@@ -162,5 +162,7 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
 
 
 def process_image(input_image, user_id, size_type, size_value, num_colors, log_buffers):
-    pattern_img_path, key_img_path = convert_image(input_image, size_type, size_value, "colours.json", num_colors, user_id, log_buffers)
-    # log_buffers[user_id].append(f"COMPLETED {datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
+    try:
+        pattern_img_path, key_img_path = convert_image(input_image, size_type, size_value, "colours.json", num_colors, user_id, log_buffers)
+    except Exception as e:
+        log_buffers[user_id].append(f"Error: {e}")

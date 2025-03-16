@@ -58,6 +58,20 @@
                             }
 
                             
+                        } else if (latestLog.startsWith("Error")) {
+                            const completedLink = document.createElement('a');
+                            completedLink.id = 'completed-link';
+                            completedLink.href = '/';
+                            completedLink.textContent = 'Home';
+                            completedLink.classList.add('btn', 'btn-primary', 'mt-3');
+                            completedLink.style.fontWeight = 'bold';
+                            completedLink.style.textDecoration = 'underline';
+
+                            linkContainer.appendChild(completedLink);
+
+                            isDone = true;
+
+                            clearInterval(fetchLogsInterval);
                         }
                     }
                 })
