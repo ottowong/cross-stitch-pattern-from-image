@@ -1,16 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Completed Pattern</title>
-</head>
-<body>
-    <h1>Generated Pattern</h1>
-    <img src="/output/{{ pattern }}" alt="Pattern Image">
-    <h2>Key</h2>
-    <img src="/output/{{ key }}" alt="Key Image">
-    <br>
-    <a href="/">Return to Home</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Completed Pattern{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="mt-4">Generated Pattern</h1>
+        <div class="mb-4">
+            <img src="/output/{{ pattern }}" alt="Pattern Image" class="img-fluid">
+        </div>
+
+        <h2>Key</h2>
+        <div class="mb-4">
+            <img src="/output/{{ key }}" alt="Key Image" class="img-fluid">
+        </div>
+
+    </div>
+{% endblock %}

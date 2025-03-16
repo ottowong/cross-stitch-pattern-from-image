@@ -1,27 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Image</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>Upload an Image for Processing</h1>
+{% block title %}Upload Image{% endblock %}
 
-<form action="/" method="POST" enctype="multipart/form-data">
-    <label for="image">Upload Image:</label>
-    <input type="file" name="image" required>
-    
-    <label for="width">Width (in pixels):</label>
-    <input type="number" name="width" value="100" min="10" required>
+{% block content %}
 
-    <label for="num_colors">Number of Color Groups (0 = unlimited):</label>
-    <input type="number" name="num_colors" value="0" min="0" required>
+    <form action="/" method="POST" enctype="multipart/form-data" class="card p-4">
+        <label for="image" class="form-label">Upload Image:</label>
+        <input type="file" name="image" class="form-control" required>
 
-    <button type="submit">Generate Pattern</button>
-</form>
+        <label for="width" class="form-label">Width (in pixels):</label>
+        <input type="number" name="width" value="100" min="10" class="form-control" required>
 
+        <label for="num_colors" class="form-label">Number of Color Groups (0 = unlimited):</label>
+        <input type="number" name="num_colors" value="0" min="0" class="form-control" required>
 
-</body>
-</html>
+        <button type="submit" class="btn btn-primary mt-3">Generate Pattern</button>
+    </form>
+{% endblock %}

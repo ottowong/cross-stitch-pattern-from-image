@@ -1,91 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Stream</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #log-container {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 80vh;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #f9f9f9;
-            margin-top: 20px;
-        }
-        #log-header {
-            font-size: 20px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .log-entry {
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>Processing Logs</h1>
+{% block title %}Log Stream{% endblock %}
 
-<div id="log-header">Latest Log:</div>
-<div id="log-container"></div>
-<div id="link-container"></div> <!-- This is where the link will appear -->
+{% block content %}
+    <div class="container">
+        <h1 class="mt-4">Processing Logs</h1>
 
-<script>
-    function fetchLogs() {
-        fetch('/get_logs')
-            .then(response => response.json())
-            .then(logs => {
-                const logContainer = document.getElementById('log-container');
-                const linkContainer = document.getElementById('link-container'); // Ensure this exists
+        <div id="log-header" class="h5 font-weight-bold mb-3">Latest Log:</div>
 
-                if (!logContainer) {
-                    console.error("Error: 'log-container' not found.");
-                    return;
-                }
+        <div id="log-container" class="border p-3" style="max-height: 80vh; background-color: #f9f9f9;"></div>
 
-                if (logs.length > 0) {
-                    const latestLog = logs[logs.length - 1];
-                    logContainer.textContent = latestLog;
-                    logContainer.scrollTop = logContainer.scrollHeight;
+        <div id="link-container" class="mt-4"></div> <!-- This is where the link will appear -->
+    </div>
 
-                    // Check if the latest log indicates completion
-                    if (latestLog.startsWith("COMPLETED ")) {
-                        const timestamp = latestLog.replace("COMPLETED ", "").trim(); // Extract timestamp
+    <script>
+        function fetchLogs() {
+            fetch('/get_logs')
+                .then(response => response.json())
+                .then(logs => {
+                    const logContainer = document.getElementById('log-container');
+                    const linkContainer = document.getElementById('link-container'); // Ensure this exists
 
-                        // Check if the link already exists to avoid duplicates
-                        if (!document.getElementById('completed-link')) {
-                            const completedLink = document.createElement('a');
-                            completedLink.id = 'completed-link';
-                            completedLink.href = `/completed/${timestamp}`;
-                            completedLink.textContent = 'View Completed Pattern';
-                            completedLink.style.display = 'block';
-                            completedLink.style.marginTop = '20px';
-                            completedLink.style.fontSize = '18px';
-                            completedLink.style.fontWeight = 'bold';
-                            completedLink.style.color = 'blue';
-                            completedLink.style.textDecoration = 'underline';
+                    if (!logContainer) {
+                        console.error("Error: 'log-container' not found.");
+                        return;
+                    }
 
-                            linkContainer.appendChild(completedLink);
+                    if (logs.length > 0) {
+                        const latestLog = logs[logs.length - 1];
+                        logContainer.textContent = latestLog;
+                        logContainer.scrollTop = logContainer.scrollHeight;
+
+                        // Check if the latest log indicates completion
+                        if (latestLog.startsWith("COMPLETED ")) {
+                            const timestamp = latestLog.replace("COMPLETED ", "").trim(); // Extract timestamp
+
+                            // Check if the link already exists to avoid duplicates
+                            if (!document.getElementById('completed-link')) {
+                                const completedLink = document.createElement('a');
+                                completedLink.id = 'completed-link';
+                                completedLink.href = `/completed/${timestamp}`;
+                                completedLink.textContent = 'View Completed Pattern';
+                                completedLink.classList.add('btn', 'btn-primary', 'mt-3');
+                                completedLink.style.fontWeight = 'bold';
+                                completedLink.style.textDecoration = 'underline';
+
+                                linkContainer.appendChild(completedLink);
+                            }
 
                             logContainer.textContent = "Done!";
                             logContainer.scrollTop = logContainer.scrollHeight;
                         }
                     }
-                }
-            })
-            .catch(error => console.error('Error fetching logs:', error));
-    }
+                })
+                .catch(error => console.error('Error fetching logs:', error));
+        }
 
-    // Fetch logs every 1 second
-    setInterval(fetchLogs, 1000);
-</script>
-
-
-</body>
-</html>
+        // Fetch logs every 1 second
+        setInterval(fetchLogs, 1000);
+    </script>
+{% endblock %}
