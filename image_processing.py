@@ -61,6 +61,14 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
     
     img = Image.open(input_image)
     
+    # If the image has an alpha channel (transparency), convert it to RGB with a white background
+    if img.mode == "RGBA":
+        log_buffers[user_id].append("Image has transparency, converting to RGB with white background...")
+        img = img.convert("RGBA")
+        background = Image.new("RGBA", img.size, (255, 255, 255, 255))  # White background
+        background.paste(img, (0, 0), img)  # Paste the original image on top
+        img = background.convert("RGB")  # Convert to RGB mode, discarding alpha
+    
     if size_type == "width":
         # Resize based on width, calculate height to maintain aspect ratio
         aspect_ratio = img.height / img.width
@@ -151,6 +159,7 @@ def convert_image(input_image, size_type, size_value, colors_json, num_colors, u
     log_buffers[user_id].append(f'COMPLETED {timestamp}')
 
     return pattern_img_path, key_img_path
+
 
 def process_image(input_image, user_id, size_type, size_value, num_colors, log_buffers):
     pattern_img_path, key_img_path = convert_image(input_image, size_type, size_value, "colours.json", num_colors, user_id, log_buffers)
