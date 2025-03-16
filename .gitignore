@@ -125,4 +125,5 @@ dmypy.json
 
 # input/output images
 input.*
-output.*
+output.png
+key.png
