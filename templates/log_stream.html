@@ -49,16 +49,18 @@
                                 completedLink.style.textDecoration = 'underline';
 
                                 linkContainer.appendChild(completedLink);
+
+                                logContainer.textContent = "Done!";
+                                logContainer.scrollTop = logContainer.scrollHeight;
+        
+                                // Set the flag to true, indicating the process is complete
+                                isDone = true;
+        
+                                // Stop fetching logs once done
+                                clearInterval(fetchLogsInterval);
                             }
 
-                            logContainer.textContent = "Done!";
-                            logContainer.scrollTop = logContainer.scrollHeight;
-    
-                            // Set the flag to true, indicating the process is complete
-                            isDone = true;
-    
-                            // Stop fetching logs once done
-                            clearInterval(fetchLogsInterval);
+                            
                         }
                     }
                 })
