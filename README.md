@@ -12,3 +12,5 @@ If you're running on Ubuntu, you may need to install Microsoft Core fonts to ens
 ```bash
 sudo apt update
 sudo apt install ttf-mscorefonts-installer
+
+An example website is (probably) up [here](https://pattern.sadlads.com).
