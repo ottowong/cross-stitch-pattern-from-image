@@ -14,4 +14,4 @@ sudo apt update
 sudo apt install ttf-mscorefonts-installer
 ```
 
-An example website is (probably) up [here](https://pattern.sadlads.com).
+A demo is (probably) up [here](https://pattern.sadlads.com).
